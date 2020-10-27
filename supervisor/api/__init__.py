@@ -1,6 +1,7 @@
 """Init file for Supervisor RESTful API."""
 import logging
 from pathlib import Path
+import re
 from typing import Optional
 
 from aiohttp import web
@@ -34,6 +35,10 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 MAX_CLIENT_SIZE: int = 1024 ** 2 * 16
 
+DEPRECATED_ENDPOINTS = re.compile(
+    r"^(?:" r"|/homeassistant/.*" r"|snapshots/.+/delete" r")$"
+)
+
 
 class RestAPI(CoreSysAttributes):
     """Handle RESTful API for Supervisor."""
@@ -47,6 +52,7 @@ class RestAPI(CoreSysAttributes):
             middlewares=[
                 self.security.system_validation,
                 self.security.token_validation,
+                deprecated_endpoints_middleware,
             ],
         )
 
@@ -484,3 +490,19 @@ class RestAPI(CoreSysAttributes):
         await self._runner.cleanup()
 
         _LOGGER.info("Stopping API on %s", self.sys_docker.network.supervisor)
+
+
+@web.middleware
+async def deprecated_endpoints_middleware(
+    request: web.Request, handler: web.RequestHandler
+):
+    """Warn about using deprecated API endpoints."""
+    if DEPRECATED_ENDPOINTS.match(request.path):
+        _LOGGER.warning(
+            (
+                "The API enpoint '%s' has been deprecated, and will be removed at the end of 2020. "
+                "See https://developers.home-assistant.io/ for alternatives"
+            ),
+            request.path,
+        )
+    return await handler(request)
