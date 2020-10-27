@@ -36,7 +36,7 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 MAX_CLIENT_SIZE: int = 1024 ** 2 * 16
 
 DEPRECATED_ENDPOINTS = re.compile(
-    r"^(?:" r"|/homeassistant/.*" r"|snapshots/.+/delete" r")$"
+    r"^(?:" r"|/homeassistant/.*" r"|/snapshots/.+/delete" r")$"
 )
 
 
