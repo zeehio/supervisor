@@ -1,5 +1,5 @@
 {
-  "image": "homeassistant/{arch}-hassio-supervisor",
+  "image": "zeehio/ha-supervisor-{arch}",
   "build_from": {
     "aarch64": "homeassistant/aarch64-base-python:3.8-alpine3.12",
     "armhf": "homeassistant/armhf-base-python:3.8-alpine3.12",
