@@ -52,7 +52,7 @@ def json_loads(data: Any) -> Dict[str, Any]:
         raise APIError("Invalid json") from err
 
 
-def api_process(method):
+def api_process(method, false_status = 400):
     """Wrap function with true/false calls to rest api."""
 
     async def wrap_api(api, *args, **kwargs):
@@ -67,7 +67,7 @@ def api_process(method):
         if isinstance(answer, web.Response):
             return answer
         elif isinstance(answer, bool) and not answer:
-            return api_return_error()
+            return api_return_error(status=false_status)
         return api_return_ok()
 
     return wrap_api
@@ -99,7 +99,9 @@ def api_process_raw(content):
 
 
 def api_return_error(
-    error: Optional[Exception] = None, message: Optional[str] = None
+    error: Optional[Exception] = None,
+    message: Optional[str] = None,
+    status: Optional[int] = 400
 ) -> web.Response:
     """Return an API error message."""
     if error and not message:
@@ -112,7 +114,7 @@ def api_return_error(
             JSON_RESULT: RESULT_ERROR,
             JSON_MESSAGE: message or "Unknown error, see supervisor",
         },
-        status=400,
+        status=status,
         dumps=lambda x: json.dumps(x, cls=JSONEncoder),
     )
 
